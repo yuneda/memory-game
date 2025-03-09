@@ -1,6 +1,7 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Timer, RefreshCw, Grid2X2, Grid3X3 } from 'lucide-react';
+import { Timer, RefreshCw, Grid2X2, Grid3X3, Volume2, VolumeX } from 'lucide-react';
 
 // Define the card interface
 interface Card {
@@ -11,7 +12,7 @@ interface Card {
 }
 
 // Define board size type
-type BoardSize = '4x4' | '5x5' | '6x6';
+type BoardSize = '4x4' | '6x6';
 
 function App() {
   // Game state
@@ -23,6 +24,11 @@ function App() {
   const [secondSelection, setSecondSelection] = useState<Card | null>(null);
   const [isChecking, setIsChecking] = useState(false);
   const [boardSize, setBoardSize] = useState<BoardSize>('4x4');
+  // Add sound enabled state - default to false
+  const [isSoundEnabled, setIsSoundEnabled] = useState(() => {
+    const saved = localStorage.getItem('isSoundEnabled');
+    return saved ? JSON.parse(saved) : false;
+  });
 
   // Audio refs
   const clickSoundRef = useRef<HTMLAudioElement | null>(null);
@@ -80,7 +86,7 @@ function App() {
         clickOscillator.stop(audioContext.currentTime + 0.1);
         
         // Save the audio as a blob
-        const clickBlob = await audioToBlob(audioContext, clickGain, 0.1);
+        const clickBlob = await audioToBlob(audioContext, 0.1);
         clickSoundRef.current = new Audio(URL.createObjectURL(clickBlob));
       }
       
@@ -105,7 +111,7 @@ function App() {
         matchOscillator.stop(audioContext.currentTime + 0.3);
         
         // Save the audio as a blob
-        const matchBlob = await audioToBlob(audioContext, matchGain, 0.3);
+        const matchBlob = await audioToBlob(audioContext, 0.3);
         matchSoundRef.current = new Audio(URL.createObjectURL(matchBlob));
       }
     } catch (error) {
@@ -114,7 +120,7 @@ function App() {
   };
 
   // Helper function to convert audio to blob
-  const audioToBlob = (audioContext: AudioContext, gainNode: GainNode, duration: number): Promise<Blob> => {
+  const audioToBlob = (audioContext: AudioContext, duration: number): Promise<Blob> => {
     return new Promise((resolve) => {
       const recorder = new MediaRecorder(audioContext.createMediaStreamDestination().stream);
       const chunks: BlobPart[] = [];
@@ -127,9 +133,14 @@ function App() {
     });
   };
 
+  // Save sound preference when it changes
+  useEffect(() => {
+    localStorage.setItem('isSoundEnabled', JSON.stringify(isSoundEnabled));
+  }, [isSoundEnabled]);
+
   // Play click sound
   const playClickSound = () => {
-    if (clickSoundRef.current) {
+    if (isSoundEnabled && clickSoundRef.current) {
       clickSoundRef.current.currentTime = 0;
       clickSoundRef.current.play().catch(err => console.error('Error playing click sound:', err));
     }
@@ -137,11 +148,14 @@ function App() {
 
   // Play match sound
   const playMatchSound = () => {
-    if (matchSoundRef.current) {
+    if (isSoundEnabled && matchSoundRef.current) {
       matchSoundRef.current.currentTime = 0;
       matchSoundRef.current.play().catch(err => console.error('Error playing match sound:', err));
     }
   };
+
+  // Toggle sound
+  const toggleSound = () => setIsSoundEnabled((prev: boolean) => !prev);
 
   // Timer effect
   useEffect(() => {
@@ -202,9 +216,8 @@ function App() {
   // Get the number of pairs based on board size
   const getNumberOfPairs = (size: BoardSize): number => {
     switch (size) {
-      case '4x4': return 8;  // 16 cards = 8 pairs
-      case '5x5': return 12; // 25 cards (we'll use 24 + 1 blank) = 12 pairs
-      case '6x6': return 18; // 36 cards = 18 pairs
+      case '4x4': return 8;   // 16 cards = 8 pairs
+      case '6x6': return 18;  // 36 cards = 18 pairs
       default: return 8;
     }
   };
@@ -212,16 +225,16 @@ function App() {
   // Get grid columns class based on board size
   const getGridColumnsClass = (size: BoardSize): string => {
     switch (size) {
-      case '4x4': return 'grid-cols-2 md:grid-cols-4';
-      case '5x5': return 'grid-cols-3 md:grid-cols-5';
-      case '6x6': return 'grid-cols-3 md:grid-cols-6';
-      default: return 'grid-cols-2 md:grid-cols-4';
+      case '4x4': return 'grid-cols-4';
+      case '6x6': return 'grid-cols-6';
+      default: return 'grid-cols-4';
     }
   };
 
   // Initialize the game with shuffled cards
   const initializeGame = () => {
     const numberOfPairs = getNumberOfPairs(boardSize);
+    console.log({numberOfPairs}); 
     const selectedEmojis = allCardEmojis.slice(0, numberOfPairs);
     
     // Create pairs of cards with the same value
@@ -231,25 +244,10 @@ function App() {
         value,
         isFlipped: false,
         isMatched: false,
-      }))
-      .sort(() => Math.random() - 0.5); // Shuffle the cards
+      }));
     
-    // For 5x5 board, add a blank card in the middle
-    if (boardSize === '5x5') {
-      const blankCard = {
-        id: cardPairs.length,
-        value: '⭐', // Special center card
-        isFlipped: true,
-        isMatched: true,
-      };
-      
-      // Insert the blank card in the middle (position 12)
-      cardPairs = [
-        ...cardPairs.slice(0, 12),
-        blankCard,
-        ...cardPairs.slice(12)
-      ];
-    }
+    // Shuffle the cards
+    cardPairs = cardPairs.sort(() => Math.random() - 0.5);
     
     setCards(cardPairs);
     setMoves(0);
@@ -263,11 +261,11 @@ function App() {
   // Change board size
   const changeBoardSize = (size: BoardSize) => {
     setBoardSize(size);
-    // Reset the game with the new board size
-    setTimeout(() => {
-      initializeGame();
-    }, 0);
   };
+
+  useEffect(() => {
+    initializeGame();
+  }, [boardSize]);
 
   // Reset card selections
   const resetSelections = () => {
@@ -327,13 +325,22 @@ function App() {
         {/* Game header */}
         <div className="bg-indigo-600 text-white p-4 flex justify-between items-center">
           <h1 className="text-2xl font-bold">Memory Card Game</h1>
-          <button 
-            onClick={initializeGame}
-            className="flex items-center gap-2 bg-white text-indigo-600 px-4 py-2 rounded-lg font-medium hover:bg-indigo-100 transition-colors"
-          >
-            <RefreshCw size={18} />
-            Restart
-          </button>
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={toggleSound}
+              className="flex items-center gap-2 bg-white text-indigo-600 px-4 py-2 rounded-lg font-medium hover:bg-indigo-100 transition-colors mr-2"
+              title={isSoundEnabled ? "Turn sound off" : "Turn sound on"}
+            >
+              {isSoundEnabled ? <Volume2 size={18} /> : <VolumeX size={18} />}
+            </button>
+            <button 
+              onClick={initializeGame}
+              className="flex items-center gap-2 bg-white text-indigo-600 px-4 py-2 rounded-lg font-medium hover:bg-indigo-100 transition-colors"
+            >
+              <RefreshCw size={18} />
+              Restart
+            </button>
+          </div>
         </div>
         
         {/* Game stats and board size selector */}
@@ -358,17 +365,6 @@ function App() {
                 4x4
               </button>
               <button 
-                onClick={() => changeBoardSize('5x5')}
-                className={`flex items-center gap-1 px-3 py-1 rounded-lg font-medium transition-colors ${
-                  boardSize === '5x5' 
-                    ? 'bg-indigo-600 text-white' 
-                    : 'bg-white text-indigo-600 hover:bg-indigo-100'
-                }`}
-              >
-                <Grid3X3 size={16} />
-                5x5
-              </button>
-              <button 
                 onClick={() => changeBoardSize('6x6')}
                 className={`flex items-center gap-1 px-3 py-1 rounded-lg font-medium transition-colors ${
                   boardSize === '6x6' 
@@ -389,7 +385,7 @@ function App() {
         
         {/* Game board */}
         <div className="p-4 md:p-8">
-          <div className={`grid ${getGridColumnsClass(boardSize)} gap-4`}>
+          <div className={`grid ${getGridColumnsClass(boardSize)} gap-2 md:gap-4 max-w-[800px] mx-auto`}>
             {cards.map(card => (
               <motion.div
                 key={card.id}
@@ -399,7 +395,7 @@ function App() {
                 onClick={() => handleCardClick(card)}
               >
                 <div 
-                  className={`w-full h-full rounded-lg flex items-center justify-center text-3xl md:text-4xl font-bold transition-all duration-500 ${
+                  className={`w-full h-full rounded-lg flex items-center justify-center text-2xl md:text-4xl font-bold transition-all duration-500 ${
                     card.isFlipped || card.isMatched 
                       ? 'bg-white border-2 border-indigo-300 shadow-md' 
                       : 'bg-indigo-600 text-white shadow-lg'
