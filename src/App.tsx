@@ -234,7 +234,6 @@ function App() {
   // Initialize the game with shuffled cards
   const initializeGame = () => {
     const numberOfPairs = getNumberOfPairs(boardSize);
-    console.log({numberOfPairs}); 
     const selectedEmojis = allCardEmojis.slice(0, numberOfPairs);
     
     // Create pairs of cards with the same value
@@ -320,22 +319,22 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-500 to-purple-600 flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-teal-500 to-orange-600 flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-4xl bg-white rounded-xl shadow-2xl overflow-hidden">
         {/* Game header */}
-        <div className="bg-indigo-600 text-white p-4 flex justify-between items-center">
+        <div className="bg-teal-600 text-white p-4 flex justify-between items-center">
           <h1 className="text-2xl font-bold">Memory Card Game</h1>
           <div className="flex items-center gap-2">
             <button 
               onClick={toggleSound}
-              className="flex items-center gap-2 bg-white text-indigo-600 px-4 py-2 rounded-lg font-medium hover:bg-indigo-100 transition-colors mr-2"
+              className="flex items-center gap-2 bg-white text-teal-600 px-4 py-2 rounded-lg font-medium hover:bg-teal-100 transition-colors mr-2"
               title={isSoundEnabled ? "Turn sound off" : "Turn sound on"}
             >
               {isSoundEnabled ? <Volume2 size={18} /> : <VolumeX size={18} />}
             </button>
             <button 
               onClick={initializeGame}
-              className="flex items-center gap-2 bg-white text-indigo-600 px-4 py-2 rounded-lg font-medium hover:bg-indigo-100 transition-colors"
+              className="flex items-center gap-2 bg-white text-teal-600 px-4 py-2 rounded-lg font-medium hover:bg-teal-100 transition-colors"
             >
               <RefreshCw size={18} />
               Restart
@@ -344,21 +343,21 @@ function App() {
         </div>
         
         {/* Game stats and board size selector */}
-        <div className="bg-indigo-50 p-4 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div className="bg-teal-50 p-4 flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-2">
-            <Timer size={20} className="text-indigo-600" />
+            <Timer size={20} className="text-teal-600" />
             <span className="font-mono text-xl font-semibold">{formatTime(timer)}</span>
           </div>
           
           <div className="flex items-center gap-2">
-            <span className="font-semibold text-indigo-800">Board Size:</span>
+            <span className="font-semibold text-teal-800">Board Size:</span>
             <div className="flex gap-2">
               <button 
                 onClick={() => changeBoardSize('4x4')}
                 className={`flex items-center gap-1 px-3 py-1 rounded-lg font-medium transition-colors ${
                   boardSize === '4x4' 
-                    ? 'bg-indigo-600 text-white' 
-                    : 'bg-white text-indigo-600 hover:bg-indigo-100'
+                    ? 'bg-teal-600 text-white' 
+                    : 'bg-white text-teal-600 hover:bg-teal-100'
                 }`}
               >
                 <Grid2X2 size={16} />
@@ -368,8 +367,8 @@ function App() {
                 onClick={() => changeBoardSize('6x6')}
                 className={`flex items-center gap-1 px-3 py-1 rounded-lg font-medium transition-colors ${
                   boardSize === '6x6' 
-                    ? 'bg-indigo-600 text-white' 
-                    : 'bg-white text-indigo-600 hover:bg-indigo-100'
+                    ? 'bg-teal-600 text-white' 
+                    : 'bg-white text-teal-600 hover:bg-teal-100'
                 }`}
               >
                 <Grid3X3 size={16} />
@@ -378,14 +377,14 @@ function App() {
             </div>
           </div>
           
-          <div className="font-semibold text-indigo-800">
+          <div className="font-semibold text-teal-800">
             Moves: <span className="font-mono text-xl">{moves}</span>
           </div>
         </div>
         
         {/* Game board */}
         <div className="p-4 md:p-8">
-          <div className={`grid ${getGridColumnsClass(boardSize)} gap-2 md:gap-4 max-w-[800px] mx-auto`}>
+          <div className={`grid ${getGridColumnsClass(boardSize)} gap-2 md:gap-4 max-w-[450px] mx-auto`}>
             {cards.map(card => (
               <motion.div
                 key={card.id}
@@ -397,8 +396,8 @@ function App() {
                 <div 
                   className={`w-full h-full rounded-lg flex items-center justify-center text-2xl md:text-4xl font-bold transition-all duration-500 ${
                     card.isFlipped || card.isMatched 
-                      ? 'bg-white border-2 border-indigo-300 shadow-md' 
-                      : 'bg-indigo-600 text-white shadow-lg'
+                      ? 'bg-white border-2 border-teal-300 shadow-md' 
+                      : 'bg-teal-600 text-white shadow-lg'
                   }`}
                 >
                   {card.isFlipped || card.isMatched ? card.value : '?'}
@@ -410,7 +409,7 @@ function App() {
         
         {/* Game completion message */}
         {cards.length > 0 && cards.every(card => card.isMatched) && (
-          <div className="bg-green-100 p-4 text-center text-green-800 font-semibold">
+          <div className="bg-orange-100 p-4 text-center text-orange-800 font-semibold">
             Congratulations! You completed the game in {formatTime(timer)} with {moves} moves.
           </div>
         )}
