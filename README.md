@@ -2,6 +2,10 @@
 
 A fun and interactive memory card game built with React, TypeScript, and Tailwind CSS. Test your memory by finding matching pairs of cards!
 
+## Demo
+
+[Live Demo](https://memory-game-yuneda.vercel.app/)
+
 ## Features
 
 - 🎮 Flip cards to find matching pairs
@@ -29,8 +33,8 @@ A fun and interactive memory card game built with React, TypeScript, and Tailwin
 
 1. Clone the repository
 ```bash
-git clone https://github.com/yourusername/memory-card-game.git
-cd memory-card-game
+git clone https://github.com/yuneda/memory-game.git
+cd memory-game
 ```
 
 2. Install dependencies
