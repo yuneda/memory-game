@@ -68,6 +68,11 @@ yarn build
 
 The build files will be in the `dist` directory.
 
+## Desktop View
+![Alt-Text](/public/desktop-view.png)
+## Mobile View
+![Alt-Text](/public/mobile-view.png)
+
 ## License
 
 MIT
