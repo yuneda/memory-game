@@ -1,21 +1,12 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
-import { Timer, RefreshCw, Grid2X2, Grid3X3, Volume2, VolumeX } from 'lucide-react';
-
-// Define the card interface
-interface Card {
-  id: number;
-  value: string;
-  isFlipped: boolean;
-  isMatched: boolean;
-}
-
-// Define board size type
-type BoardSize = '4x4' | '6x6';
+import Header from './components/Header';
+import GameStats from './components/GameStats';
+import GameBoard from './components/GameBoard';
+import CompletionMessage from './components/CompletionMessage';
+import { BoardSize, Card } from './types';
 
 function App() {
-  // Game state
   const [cards, setCards] = useState<Card[]>([]);
   const [moves, setMoves] = useState(0);
   const [timer, setTimer] = useState(0);
@@ -24,6 +15,7 @@ function App() {
   const [secondSelection, setSecondSelection] = useState<Card | null>(null);
   const [isChecking, setIsChecking] = useState(false);
   const [boardSize, setBoardSize] = useState<BoardSize>('4x4');
+  
   // Add sound enabled state - default to false
   const [isSoundEnabled, setIsSoundEnabled] = useState(() => {
     const saved = localStorage.getItem('isSoundEnabled');
@@ -311,108 +303,31 @@ function App() {
     }
   };
 
-  // Format time for display
-  const formatTime = (seconds: number) => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-teal-500 to-orange-600 flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-4xl bg-white rounded-xl shadow-2xl overflow-hidden">
-        {/* Game header */}
-        <div className="bg-teal-600 text-white p-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Memory Card Game</h1>
-          <div className="flex items-center gap-2">
-            <button 
-              onClick={toggleSound}
-              className="flex items-center gap-2 bg-white text-teal-600 px-4 py-2 rounded-lg font-medium hover:bg-teal-100 transition-colors mr-2"
-              title={isSoundEnabled ? "Turn sound off" : "Turn sound on"}
-            >
-              {isSoundEnabled ? <Volume2 size={18} /> : <VolumeX size={18} />}
-            </button>
-            <button 
-              onClick={initializeGame}
-              className="flex items-center gap-2 bg-white text-teal-600 px-4 py-2 rounded-lg font-medium hover:bg-teal-100 transition-colors"
-            >
-              <RefreshCw size={18} />
-              Restart
-            </button>
-          </div>
-        </div>
-        
-        {/* Game stats and board size selector */}
-        <div className="bg-teal-50 p-4 flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="flex items-center gap-2">
-            <Timer size={20} className="text-teal-600" />
-            <span className="font-mono text-xl font-semibold">{formatTime(timer)}</span>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <span className="font-semibold text-teal-800">Board Size:</span>
-            <div className="flex gap-2">
-              <button 
-                onClick={() => changeBoardSize('4x4')}
-                className={`flex items-center gap-1 px-3 py-1 rounded-lg font-medium transition-colors ${
-                  boardSize === '4x4' 
-                    ? 'bg-teal-600 text-white' 
-                    : 'bg-white text-teal-600 hover:bg-teal-100'
-                }`}
-              >
-                <Grid2X2 size={16} />
-                4x4
-              </button>
-              <button 
-                onClick={() => changeBoardSize('6x6')}
-                className={`flex items-center gap-1 px-3 py-1 rounded-lg font-medium transition-colors ${
-                  boardSize === '6x6' 
-                    ? 'bg-teal-600 text-white' 
-                    : 'bg-white text-teal-600 hover:bg-teal-100'
-                }`}
-              >
-                <Grid3X3 size={16} />
-                6x6
-              </button>
-            </div>
-          </div>
-          
-          <div className="font-semibold text-teal-800">
-            Moves: <span className="font-mono text-xl">{moves}</span>
-          </div>
-        </div>
-        
-        {/* Game board */}
-        <div className="p-4 md:p-8">
-          <div className={`grid ${getGridColumnsClass(boardSize)} gap-2 md:gap-4 max-w-[450px] mx-auto`}>
-            {cards.map(card => (
-              <motion.div
-                key={card.id}
-                className="aspect-square cursor-pointer"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => handleCardClick(card)}
-              >
-                <div 
-                  className={`w-full h-full rounded-lg flex items-center justify-center text-2xl md:text-4xl font-bold transition-all duration-500 ${
-                    card.isFlipped || card.isMatched 
-                      ? 'bg-white border-2 border-teal-300 shadow-md' 
-                      : 'bg-teal-600 text-white shadow-lg'
-                  }`}
-                >
-                  {card.isFlipped || card.isMatched ? card.value : '?'}
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-        
-        {/* Game completion message */}
-        {cards.length > 0 && cards.every(card => card.isMatched) && (
-          <div className="bg-orange-100 p-4 text-center text-orange-800 font-semibold">
-            Congratulations! You completed the game in {formatTime(timer)} with {moves} moves.
-          </div>
-        )}
+        <Header 
+          isSoundEnabled={isSoundEnabled} 
+          toggleSound={toggleSound} 
+          initializeGame={initializeGame} 
+        />
+        <GameStats 
+          timer={timer} 
+          moves={moves} 
+          boardSize={boardSize} 
+          changeBoardSize={changeBoardSize} 
+        />
+        <GameBoard 
+          cards={cards} 
+          handleCardClick={handleCardClick} 
+          getGridColumnsClass={getGridColumnsClass} 
+          boardSize={boardSize} 
+        />
+        <CompletionMessage 
+          timer={timer} 
+          moves={moves} 
+          allCardsMatched={cards.length > 0 && cards.every(card => card.isMatched)} 
+        />
       </div>
     </div>
   );
