@@ -1,0 +1,27 @@
+@import "tailwindcss";
+
+/* Custom styles can be added below */
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Card flip animation */
+.rotate-y-180 {
+  transform: rotateY(180deg);
+}
+
+/* Add perspective for 3D effect */
+@layer components {
+  .aspect-square {
+    perspective: 1000px;
+  }
+  
+  .aspect-square > div {
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
+  }
+}
